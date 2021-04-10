@@ -15,34 +15,107 @@ class CalcController {
 
     initialize() {
 
-        this.setDisplayDateTime();
+        this.setDisplayDateTime(); //Inicia Hora e data na tela da calculadora
         setInterval(()=>{ //setInterval: função executada em um intervalo de tempo, de forma intermintente. O tempo é marcado em milisegundos.
             this.setDisplayDateTime();
         }, 1000);      
 
     }
 
-    setDisplayDateTime() { //define exibição de data e hora.
+    //define exibição de data e hora.
+    setDisplayDateTime() { 
 
         this.displayDate = this.currentDate.toLocaleDateString(this._locale);//retorna uma string com a representação de parte da data baseando-se no idioma.
         this.displayTime = this.currentDate.toLocaleTimeString(this._locale);//retorna uma string com a representação da hora baseando-se no idioma.
     }
 
-    
 
-    addEventListenerAll(element, events, fn) {  //Metodo criado para passar mais de um evento para o escutador de eventos.
+    //Metodo criado para passar mais de um evento para o escutador de eventos.
+    addEventListenerAll(element, events, fn) {  
        
         events.split(' ').forEach(event => { //Split tem a tarefa de pegar os eventos passados como strings ("click drag") e transformar em um array ['click', 'drag']. (" ") separa as strings pelo espaco.
             element.addEventListener(event, fn, false);
         });
     }
 
+
+    //Operações dos botões
+    clearAll() {
+        this._operation = [];
+    }
+
+    clearEntry() {
+        this._operation.pop();
+    }
+
+    addOperation(value) {
+        this._operation.push(value);
+        console.log(this._operation);
+    }
+
+    setError() {
+        this.displayCalc = 'Error';
+    }
+
     execBtn(value) {
         switch (value) {
 
+            case 'ac':
+                this.clearAll();
+                break;
+
+            case 'ce':
+                this.clearEntry();
+                break;
+
+            case 'soma':
+                ;
+                break;
+
+            case 'subtracao':
+                ;
+                break;
+
+            case 'divisao':
+                ;
+                break;
+
+            case 'multiplicacao':
+                ;
+                break;
+
+            case 'porcento':
+                ;
+                break;
+
+            case 'igual':
+                ;
+                break;            
+
+            case '0':
+            case '1':
+            case '2':
+            case '3':
+            case '4':
+            case '5':
+            case '6':
+            case '7':
+            case '8':
+            case '9':
+                this.addOperation(parseInt(value));
+                break;
+
+            default:
+                this.setError();
+                break;
+
+            ;
+
         }
     }
+    
 
+    //Evento do botão
     initButtonsEvents() {
 
         let buttons = document.querySelectorAll('#buttons > g, #parts > g');
