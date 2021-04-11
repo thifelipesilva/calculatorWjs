@@ -13,6 +13,7 @@ class CalcController {
         this.initButtonsEvents();
     }
 
+    // Metodo initialize define hora e data, quando a pagina da calculadora eh iniciada.
     initialize() {
 
         this.setDisplayDateTime(); //Inicia Hora e data na tela da calculadora
@@ -25,8 +26,8 @@ class CalcController {
     //define exibição de data e hora.
     setDisplayDateTime() { 
 
-        this.displayDate = this.currentDate.toLocaleDateString(this._locale);//retorna uma string com a representação de parte da data baseando-se no idioma.
-        this.displayTime = this.currentDate.toLocaleTimeString(this._locale);//retorna uma string com a representação da hora baseando-se no idioma.
+        this.displayDate = this.currentDate.toLocaleDateString(this._locale);//toLocaleDateString retorna uma string com a representação de parte da data e da hora baseando-se no idioma.
+        this.displayTime = this.currentDate.toLocaleTimeString(this._locale);
     }
 
 
@@ -41,16 +42,74 @@ class CalcController {
 
     //Operações dos botões
     clearAll() {
-        this._operation = [];
+        this._operation = []; // equivale a limpar os dados da tela
     }
 
     clearEntry() {
-        this._operation.pop();
+        this._operation.pop(); //pop retira o elemento do array.
+    }
+
+    getLastOperation() {
+        return this._operation[this._operation.length - 1];
+    }
+
+    setLastOperation(value) {
+        this._operation[this._operation.length - 1] = value;
+    }
+
+    isOperator(value) {
+        return (['+', '-', '*', '/', '%'].indexOf(value) > -1)  //indexOf busca o value dentro do array.
+    }
+
+    pushOperation(value) {
+        this._operation.push(value);
+
+        if(this._operation.length > 3) {
+            this.calc();
+        }
+    }
+
+    calc() {
+        
+        let last = this._operation.pop();
+
+        let result = eval(this._operation.join(''));
+
+        this._operation = [result, last];
+
+        console.log(this._operation);
+    }
+
+    setLastNumberToDisplay() {
+
     }
 
     addOperation(value) {
-        this._operation.push(value);
-        console.log(this._operation);
+
+        if(isNaN(this.getLastOperation())) {
+
+            if(this.isOperator(value)){
+                this.setLastOperation(value);
+
+            } else if(isNaN(value)){
+                console.log('outra coisa', value);
+
+            } else {
+                this.pushOperation(value);
+
+            }
+
+        } else {
+
+            if(this.isOperator(value)) {
+                this.pushOperation(value);
+
+            } else {
+                let newValue = this.getLastOperation().toString() + value.toString();
+                this.setLastOperation(parseInt(newValue));
+                this.setLastNumberToDisplay();
+            }
+        }
     }
 
     setError() {
@@ -69,27 +128,31 @@ class CalcController {
                 break;
 
             case 'soma':
-                ;
+                this.addOperation('+');
                 break;
 
             case 'subtracao':
-                ;
+                this.addOperation('-');
                 break;
 
             case 'divisao':
-                ;
+                this.addOperation('/');
                 break;
 
             case 'multiplicacao':
-                ;
+                this.addOperation('*');
                 break;
 
             case 'porcento':
-                ;
+                this.addOperation('%');
                 break;
 
             case 'igual':
                 ;
+                break;  
+
+            case 'ponto':
+                this.addOperation('.');
                 break;            
 
             case '0':
@@ -107,15 +170,11 @@ class CalcController {
 
             default:
                 this.setError();
-                break;
-
-            ;
-
         }
     }
     
 
-    //Evento do botão
+    //Evento dos botões
     initButtonsEvents() {
 
         let buttons = document.querySelectorAll('#buttons > g, #parts > g');
