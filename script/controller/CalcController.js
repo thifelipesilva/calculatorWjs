@@ -49,7 +49,7 @@ class CalcController {
         this._operation.pop(); //pop retira o elemento do array.
     }
 
-    getLastOperation() {
+    getLastOperation() { // retorna o ultimo item do array, pois length retorna a quantidade de itens.
         return this._operation[this._operation.length - 1];
     }
 
@@ -57,66 +57,76 @@ class CalcController {
         this._operation[this._operation.length - 1] = value;
     }
 
-    isOperator(value) {
+    isOperator(value) { //validação dos sinais.
         return (['+', '-', '*', '/', '%'].indexOf(value) > -1)  //indexOf busca o value dentro do array.
     }
 
-    pushOperation(value) {
+    pushOperation(value) { // coloca os sinais no array.
         this._operation.push(value);
 
-        if(this._operation.length > 3) {
+        if(this._operation.length > 3) { //quando a calculado tem uma operaçao mais um sinal(quatro itens no array [35, '+', 30, -]), ele executa o calculo e armazena o sinal
             this.calc();
         }
     }
 
-    calc() {
+    calc() { //calcula a primeira operação, retorna o total da operação e o novo sinal.
         
-        let last = this._operation.pop();
+        let last = this._operation.pop(); //tira o ultimo item no array, no caso, sempre sera um sinal
 
-        let result = eval(this._operation.join(''));
+        let result = eval(this._operation.join(''));// eval transforma td em operação e realiza o calculo. Join passa td pra string. É preferivel nesse caso usar join do que toString por causa do seu retorno.
 
         this._operation = [result, last];
 
-        console.log(this._operation);
+        this.setLastNumberToDisplay();
     }
 
-    setLastNumberToDisplay() {
+    setLastNumberToDisplay() { //atualiza o display.
+        let lastNumber;
 
+        for(let i = this._operation.length - 1; i >= 0; i--) { // sempre o array vai ter quatro itens, o quarto item sera um sinal.
+            if (!this.isOperator(this._operation[i])) { // se for um numero salva na variavel lastNumber.
+                lastNumber = this._operation[i];
+                break;
+            }
+        }
+
+        this.displayCalc = lastNumber;
     }
 
-    addOperation(value) {
+    addOperation(value) { //recebe o valor dos botões  .
 
-        if(isNaN(this.getLastOperation())) {
-
-            if(this.isOperator(value)){
+        if(isNaN(this.getLastOperation())) { //Se a ultima coisa digitada não é um numero.
+            
+            if(this.isOperator(value)){  
                 this.setLastOperation(value);
-
+               
             } else if(isNaN(value)){
-                console.log('outra coisa', value);
+                console.log('c', value);
 
-            } else {
+            } else { //primeiro numero a ser inserido na calculadora e primeiro numero depois do sinal de operação  vão ser inserido nesse else
                 this.pushOperation(value);
-
+                this.setLastNumberToDisplay();
             }
 
-        } else {
+        } else { //numeros e sinais ['*', '-', '+', '/', ]
 
-            if(this.isOperator(value)) {
+            if(this.isOperator(value)) { //valida se é um sinal de operação ['*', '-', '+', '/', ]
                 this.pushOperation(value);
-
+                
             } else {
                 let newValue = this.getLastOperation().toString() + value.toString();
                 this.setLastOperation(parseInt(newValue));
                 this.setLastNumberToDisplay();
+                
             }
         }
     }
 
-    setError() {
+    setError() { //mensagem de erro
         this.displayCalc = 'Error';
     }
 
-    execBtn(value) {
+    execBtn(value) { //metodo da execução dos botoes.
         switch (value) {
 
             case 'ac':
