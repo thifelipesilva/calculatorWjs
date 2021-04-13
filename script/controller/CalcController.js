@@ -19,8 +19,9 @@ class CalcController {
         this.setDisplayDateTime(); //Inicia Hora e data na tela da calculadora
         setInterval(()=>{ //setInterval: função executada em um intervalo de tempo, de forma intermintente. O tempo é marcado em milisegundos.
             this.setDisplayDateTime();
-        }, 1000);      
+        }, 1000);  
 
+        this.setLastNumberToDisplay();
     }
 
     //define exibição de data e hora.
@@ -43,10 +44,12 @@ class CalcController {
     //Operações dos botões
     clearAll() {
         this._operation = []; // equivale a limpar os dados da tela
+        this.setLastNumberToDisplay();
     }
 
     clearEntry() {
-        this._operation.pop(); //pop retira o elemento do array.
+        this._operation.pop(); //pop retira o ultimo elemento do array.
+        this.setLastNumberToDisplay();
     }
 
     getLastOperation() { // retorna o ultimo item do array, pois length retorna a quantidade de itens.
@@ -70,12 +73,22 @@ class CalcController {
     }
 
     calc() { //calcula a primeira operação, retorna o total da operação e o novo sinal.
+       
+        let last = '';
+
+        if(this._operation.length > 3) { //verificação para executar os sinal de igual quando tiver mais q dois itens.
+            let last = this._operation.pop(); //salva o ultimo item no array na variavel Last. Sempre sera um sinal
+        }
         
-        let last = this._operation.pop(); //tira o ultimo item no array, no caso, sempre sera um sinal
+        let result = eval(this._operation.join(''));// eval transforma td em operação e realiza o calculo. Join passa td pra string. É preferivel nesse caso usar join do que toString por causa do seu retorno.    
 
-        let result = eval(this._operation.join(''));// eval transforma td em operação e realiza o calculo. Join passa td pra string. É preferivel nesse caso usar join do que toString por causa do seu retorno.
-
-        this._operation = [result, last];
+        if(last == '%') { //Operação do sinal  porcento.
+            result = result / 100;
+            this._operation = [result]; //devolve um array com um elemento pq o '%' já é o quarto elemento.
+        } else {
+            this._operation = [result];    
+            if (last) this._operation.push(last); //se last for diferente de vazio.
+        }
 
         this.setLastNumberToDisplay();
     }
@@ -89,6 +102,8 @@ class CalcController {
                 break;
             }
         }
+
+        if (!lastNumber) lastNumber = 0; // Se lastNumber é vazio coloca 0; (para os casos ce e ac)
 
         this.displayCalc = lastNumber;
     }
@@ -158,7 +173,7 @@ class CalcController {
                 break;
 
             case 'igual':
-                ;
+                this.calc();
                 break;  
 
             case 'ponto':
