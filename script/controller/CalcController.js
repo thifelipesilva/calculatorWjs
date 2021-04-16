@@ -2,6 +2,8 @@ class CalcController {
 
     constructor() {
 
+        this._audio = new Audio('click.mp3');
+        this._audioOnOff = false;
         this._lastOperator = '';
         this._lastNumber = '';
         this._operation = [];
@@ -11,8 +13,28 @@ class CalcController {
         this._timeEl = document.querySelector('#hora');
         this._currentDate;
 
+        this.initKeyBoard()
         this.initialize();
         this.initButtonsEvents();
+    }
+
+    //metodos de copiar e colar
+    pasteFromClipboard() {
+        document.addEventListener('paste', e =>{
+            let text = e.clipboardData.getData('Text');
+            this.displayCalc = parseFloat(text);
+        })
+    }
+
+    copyToClipboard() {
+
+        let input = document.createElement('input');
+        input.value = this.displayCalc; //passa o valor do display para o input
+        document.body.appendChild(input);
+        input.select(); //seleciona o conteudo do input
+        document.execCommand('Copy'); //copia para o sistema operacional.
+        input.remove();// remove o input.
+
     }
 
     // Metodo initialize define hora e data, quando a pagina da calculadora eh iniciada.
@@ -24,6 +46,90 @@ class CalcController {
         }, 1000);  
 
         this.setLastNumberToDisplay();
+        this.pasteFromClipboard();
+
+        document.querySelectorAll('.btn-ac').forEach(btn=>{ //como dois lugares tem a mesma classe, o forEach pra add o evento em cada botão
+            btn.addEventListener('dblclick', e =>{
+                this.toggleAudio();//desligar audio
+            })
+        })
+    }
+
+    toggleAudio() {
+
+        this._audioOnOff = !this._audioOnOff;
+
+        /*
+        Outras formas de escreve a condicional
+
+        this._audioOnOff = (this._audioOnOff) ? false : true;
+
+        if(this._audioOnOff) {
+            this._audioOnOff = false;
+        } else {
+            this._audioOnOff = true; 
+        }
+        */
+    }
+
+    playAudio() {
+        if(this._audioOnOff) {
+            this._audio.currentTime = 0; // Toca o audio do inicio quando aperta um botão antes de o som dele acabar.
+            this._audio.play();
+        } 
+    }
+
+    //eventos de teclado
+    initKeyBoard() {
+        document.addEventListener('keyup', e =>{
+
+            this.playAudio();
+
+            switch (e.key) {
+
+                case 'Escape':
+                    this.clearAll();
+                    break;
+    
+                case 'Backspace':
+                    this.clearEntry();
+                    break;
+    
+                case '+':
+                case '-':
+                case '*':
+                case '/':
+                case '%':
+                    this.addOperation(e.key);
+                    break;
+
+                case 'Enter':
+                case '=' :   
+                    this.calc();
+                    break;  
+    
+                case '.':
+                case ',':
+                    this.addDot('.');
+                    break;            
+    
+                case '0':
+                case '1':
+                case '2':
+                case '3':
+                case '4':
+                case '5':
+                case '6':
+                case '7':
+                case '8':
+                case '9':
+                    this.addOperation(parseInt(e.key));
+                    break;
+
+                case 'c':
+                    if(e.ctrlKey) this.copyToClipboard()
+            }
+        });  
     }
 
     //define exibição de data e hora.
@@ -79,9 +185,15 @@ class CalcController {
     }
 
    getResult() {
-        return eval(this._operation.join(''));// eval transforma td em operação e realiza o calculo. Join passa td pra string. É preferivel nesse caso usar join do que toString por causa do seu retorno.    
+        try{
+            return eval(this._operation.join(''));// eval transforma td em operação e realiza o calculo. Join passa td pra string. É preferivel nesse caso usar join do que toString por causa do seu retorno.    
+        } catch(e) {
+            setTimeout(() =>{
+                this.setError();
+            }, 1);            
+        }
 
-   }
+    }
 
     calc() { //calcula a primeira operação, retorna o total da operação e o novo sinal.
        
@@ -167,7 +279,7 @@ class CalcController {
                 
             } else {
                 let newValue = this.getLastOperation().toString() + value.toString();
-                this.setLastOperation(parseFloat(newValue));
+                this.setLastOperation(newValue);
                 this.setLastNumberToDisplay();
                 
             }
@@ -180,7 +292,9 @@ class CalcController {
 
     addDot() {
         let lastOperation = this.getLastOperation(); //pega a ultima operação
-        console.log(lastOperation)
+        
+        if (typeof lastOperation === 'string' && lastOperation.split('').indexOf('.') > -1) return; //Impede de acrescentar mais um ponto. return sai do metodo. Se o tipo de lastOperation for uma string e conter um ponto no array devolvido por split em lastOperation.
+
         if(this.isOperator(lastOperation) || !lastOperation) { // !lastOperation: se ele não existir.
             this.pushOperation('0.');
         } else{
@@ -191,6 +305,8 @@ class CalcController {
     }
 
     execBtn(value) { //metodo da execução dos botoes.
+        
+        this.playAudio();
         switch (value) {
 
             case 'ac':
@@ -298,6 +414,10 @@ class CalcController {
     }    
 
     set displayCalc(value) {
+        if(value.toString().length > 10) { //limite de des caracteres na tela da calculadora.
+            this.setError();
+            return false;
+        }
         this._displayCalcEl.innerHTML = value;
     }   
 
